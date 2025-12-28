@@ -14,6 +14,8 @@
   let isScrolling = false;
   let observer = null;
   let checkInterval = null;
+  let loopMonitorInterval = null;
+  let disableLoopHandler = null;
 
   /**
    * Enhanced logging function
@@ -120,6 +122,31 @@
   }
 
   /**
+   * Continuously monitor and disable video loop
+   */
+  function startLoopMonitor(video) {
+    // Clear any existing monitor
+    if (loopMonitorInterval) {
+      clearInterval(loopMonitorInterval);
+    }
+    
+    // Continuously check and disable loop
+    loopMonitorInterval = setInterval(() => {
+      if (video && video.loop) {
+        log('Loop was re-enabled, disabling again');
+        video.loop = false;
+      }
+    }, 100); // Check every 100ms
+  }
+  
+  function stopLoopMonitor() {
+    if (loopMonitorInterval) {
+      clearInterval(loopMonitorInterval);
+      loopMonitorInterval = null;
+    }
+  }
+
+  /**
    * Setup video event listeners
    */
   function setupVideo(video) {
@@ -145,17 +172,44 @@
     });
     
     // Remove previous listeners if any
-    if (currentVideo) {
+    if (currentVideo && disableLoopHandler) {
       log('Removing listeners from previous video');
       currentVideo.removeEventListener('ended', handleVideoEnd);
       currentVideo.onended = null;
+      // Remove click and seek listeners
+      currentVideo.removeEventListener('click', disableLoopHandler);
+      currentVideo.removeEventListener('seeked', disableLoopHandler);
+      currentVideo.removeEventListener('seeking', disableLoopHandler);
     }
+    
+    // Stop previous loop monitor
+    stopLoopMonitor();
 
     currentVideo = video;
     
     // Prevent video looping
     video.loop = false;
     log('Set video.loop = false');
+    
+    // Function to disable loop (used for event handlers)
+    disableLoopHandler = () => {
+      if (video.loop) {
+        log('Loop detected after user interaction, disabling');
+        video.loop = false;
+      }
+    };
+    
+    // Listen for click events to disable loop
+    video.addEventListener('click', disableLoopHandler);
+    log('Added click event listener to disable loop');
+    
+    // Listen for seek events to disable loop
+    video.addEventListener('seeked', disableLoopHandler);
+    video.addEventListener('seeking', disableLoopHandler);
+    log('Added seek event listeners to disable loop');
+    
+    // Start continuous loop monitoring
+    startLoopMonitor(video);
     
     // Add multiple event listeners to catch video end
     // Method 1: onended property
@@ -285,6 +339,7 @@
       if (checkInterval) {
         clearInterval(checkInterval);
       }
+      stopLoopMonitor();
     });
 
     log('=== Extension Initialization Complete ===');
@@ -319,6 +374,7 @@
       if (checkInterval) {
         clearInterval(checkInterval);
       }
+      stopLoopMonitor();
       // Reinitialize after a short delay
       setTimeout(init, 500);
     }

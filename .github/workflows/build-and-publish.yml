@@ -44,21 +44,11 @@ jobs:
           name: firefox-extension
           path: dist/youtube-shorts-autoscroll-firefox.zip
 
-      # Uncomment and configure when ready to publish
-      # - name: Publish to Chrome Web Store
-      #   uses: PlowOps/chrome-extension-upload@v1
-      #   with:
-      #     client-id: ${{ secrets.CHROME_CLIENT_ID }}
-      #     client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
-      #     refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
-      #     extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
-      #     file-path: dist/youtube-shorts-autoscroll-chrome.zip
-
-      # - name: Publish to Firefox Add-ons
-      #   uses: actions-hub/firefox-addon@master
-      #   with:
-      #     firefox-addon-id: ${{ secrets.FIREFOX_ADDON_ID }}
-      #     firefox-jwt-issuer: ${{ secrets.FIREFOX_JWT_ISSUER }}
-      #     firefox-jwt-secret: ${{ secrets.FIREFOX_JWT_SECRET }}
-      #     firefox-file: dist/youtube-shorts-autoscroll-firefox.zip
-
+      - name: Upload to Chrome Web Store
+        working-directory: dist/chrome
+        run: npx chrome-webstore-upload-cli@3
+        env:
+          EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
