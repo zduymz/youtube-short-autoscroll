@@ -1,0 +1,64 @@
+name: Build and Publish Extension
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Chrome extension
+        run: npm run build:chrome
+
+      - name: Build Firefox extension
+        run: npm run build:firefox
+
+      - name: Package extensions
+        run: npm run package:all
+
+      - name: Upload Chrome artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: chrome-extension
+          path: dist/youtube-shorts-autoscroll-chrome.zip
+
+      - name: Upload Firefox artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: firefox-extension
+          path: dist/youtube-shorts-autoscroll-firefox.zip
+
+      # Uncomment and configure when ready to publish
+      # - name: Publish to Chrome Web Store
+      #   uses: PlowOps/chrome-extension-upload@v1
+      #   with:
+      #     client-id: ${{ secrets.CHROME_CLIENT_ID }}
+      #     client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+      #     refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+      #     extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+      #     file-path: dist/youtube-shorts-autoscroll-chrome.zip
+
+      # - name: Publish to Firefox Add-ons
+      #   uses: actions-hub/firefox-addon@master
+      #   with:
+      #     firefox-addon-id: ${{ secrets.FIREFOX_ADDON_ID }}
+      #     firefox-jwt-issuer: ${{ secrets.FIREFOX_JWT_ISSUER }}
+      #     firefox-jwt-secret: ${{ secrets.FIREFOX_JWT_SECRET }}
+      #     firefox-file: dist/youtube-shorts-autoscroll-firefox.zip
+
