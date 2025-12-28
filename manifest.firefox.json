@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "description": "Automatically scrolls to the next video when a YouTube Short ends",
   "permissions": [
-    "storage",
     "https://youtube.com/*",
     "https://www.youtube.com/*"
   ],
@@ -25,7 +24,6 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "youtube-shorts-autoscroll@example.com"
     }
   }
 }

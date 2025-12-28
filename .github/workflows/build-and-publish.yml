@@ -10,6 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: default
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout code
@@ -23,26 +25,33 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Chrome extension
-        run: npm run build:chrome
-
-      - name: Build Firefox extension
-        run: npm run build:firefox
-
       - name: Package extensions
         run: npm run package:all
 
-      - name: Upload Chrome artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: chrome-extension
-          path: dist/youtube-shorts-autoscroll-chrome.zip
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
 
-      - name: Upload Firefox artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: firefox-extension
-          path: dist/youtube-shorts-autoscroll-firefox.zip
+      - name: Create GitHub Release
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --title "Release v${{ steps.version.outputs.version }}" \
+            --notes "## YouTube Shorts Auto-Scroll v${{ steps.version.outputs.version }}
+          
+          ### Downloads
+          - **Chrome Extension**: [youtube-shorts-autoscroll-chrome.zip](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/youtube-shorts-autoscroll-chrome.zip)
+          - **Firefox Extension**: [youtube-shorts-autoscroll-firefox.zip](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/youtube-shorts-autoscroll-firefox.zip)
+          
+          ### Installation
+          - **Chrome**: Download the Chrome zip file, extract it, and load it as an unpacked extension in Chrome
+          - **Firefox**: Download the Firefox zip file, extract it, and load it in Firefox's debugging page" \
+            dist/youtube-shorts-autoscroll-chrome.zip \
+            dist/youtube-shorts-autoscroll-firefox.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload to Chrome Web Store
         working-directory: dist/chrome

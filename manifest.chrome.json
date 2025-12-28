@@ -3,9 +3,7 @@
   "name": "YouTube Shorts Auto-Scroll",
   "version": "1.0.0",
   "description": "Automatically scrolls to the next video when a YouTube Short ends",
-  "permissions": [
-    "storage"
-  ],
+  "permissions": [],
   "host_permissions": [
     "https://youtube.com/*",
     "https://www.youtube.com/*"
